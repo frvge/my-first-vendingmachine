@@ -1,5 +1,9 @@
 import sys
 
+class VendingMachineException(Exception): pass
+class NotEnoughMoneyException(VendingMachineException): pass
+class OutOfStockException(VendingMachineException): pass
+
 class VendingMachine:
 	def __init__(self):
 		self.__inventory = [[]]
@@ -19,13 +23,27 @@ class VendingMachine:
 		return self.__inventory[row - 1][col - 1]
 
 	def getPrice(self, row, col):
-		return self.getItem(row, col).get('price')
+		return self.getItem(row, col)['price']
 
-	def getAmount(self, row, col):
-		return self.getItem(row, col).get('amount')
+	def getStock(self, row, col):
+		return self.getItem(row, col)['stock']
+
+	def inStock(self, row, col):
+		return self.getStock(row, col) > 0
 
 	def hasPaidEnough(self, row, col):
 		return self.__money >= self.getPrice(row, col)
+
+	def deliverItem(self, row, col):
+		if self.getStock(row, col) < 1:
+			raise OutOfStockException()
+		if self.getPrice(row, col) > self.__money:
+			raise NotEnoughMoneyException()
+
+		# everything OK
+		self.__money -= self.getPrice(row, col)
+		self.__inventory[row - 1][col - 1]['stock'] = self.getStock(row, col) - 1
+		return self.getItem(row, col)['name']
 
 
 if __name__ == "__main__":
