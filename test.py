@@ -1,8 +1,6 @@
 import sys
 import unittest
-from vendingmachine import VendingMachine, NotEnoughMoneyException, OutOfStockException
-
-
+from vendingmachine import VendingMachine, NotEnoughMoneyException, OutOfStockException, Product
 
 class TestVendingMachine(unittest.TestCase):
 	def test_exists(self):
@@ -20,15 +18,12 @@ class TestVendingMachine(unittest.TestCase):
 		expected = [[]]
 		self.assertEquals(vm.getInventory(), expected)
 
-		vm._VendingMachine__inventory = [
-			[{'name' : 'cola'}, {'name': 'fanta'}],
-			[{'name': 'sprite'}, {'name': 'applejuice'}]
+		expected = [
+			[Product('cola'), Product('fanta')],
+			[Product('sprite'), Product('applejuice')]
 		]
 
-		expected = [
-			[{'name' : 'cola'}, {'name': 'fanta'}],
-			[{'name': 'sprite'}, {'name': 'applejuice'}]
-		]
+		vm._VendingMachine__inventory = expected
 
 		self.assertEquals(vm.getInventory(), expected)
 
@@ -40,8 +35,8 @@ class TestVendingMachine(unittest.TestCase):
 		self.assertEquals(vm.getInventory(), expected)
 
 		expected = [
-			[{'name' : 'cola'}, {'name': 'fanta'}],
-			[{'name': 'sprite'}, {'name': 'applejuice'}]
+			[Product('cola'), Product('fanta')],
+			[Product('sprite'), Product('applejuice')]
 		]
 		vm.setInventory(expected)
 		self.assertEquals(vm.getInventory(), expected)
@@ -56,21 +51,25 @@ class TestVendingMachine(unittest.TestCase):
 	def test_getItem(self):
 		vm = VendingMachine()
 		inventory = [
-			[{'name': 'cola', 'price': 1}, {'name': 'fanta', 'price': 3}],
-			[{'name': 'fristi', 'price': 2}, {'name': 'sprite', 'price': 4}]
+			[Product('cola', 2), Product('fanta', 3)],
+			[Product('fristi', 2), Product('applejuice')]
 		]
 		vm.setInventory(inventory)
-		expected = {'name': 'fristi', 'price': 2}
-		self.assertEquals(vm.getItem(2, 1), expected)
-		expected = {'name': 'fanta', 'price': 3}
-		self.assertEquals(vm.getItem(1, 2), expected)		
+		expected = Product('fristi', 2)
+		
+		print(expected)
+		print(vm.getItem(2, 1))
+		
+		self.assertEqual(vm.getItem(2, 1), expected)
+		expected = Product('fanta', 3)
+		self.assertEqual(vm.getItem(1, 2), expected)		
 
 
 	def test_getPrice(self):
 		vm = VendingMachine()
 		inventory = [
-			[{'name': 'cola', 'price': 1}, {'name': 'fanta', 'price': 3}],
-			[{'name': 'fristi', 'price': 2}, {'name': 'sprite', 'price': 4}]
+			[Product('cola', 1), Product('fanta', 3)],
+			[Product('fristi', 2), Product('applejuice', 4)]
 		]
 		vm.setInventory(inventory)
 		expected = 1
@@ -81,8 +80,8 @@ class TestVendingMachine(unittest.TestCase):
 	def test_getStock(self):
 		vm = VendingMachine()
 		inventory = [
-			[{'name': 'cola', 'stock': 1}, {'name': 'fanta', 'stock': 3}],
-			[{'name': 'fristi', 'stock': 2}, {'name': 'sprite', 'stock': 4}]
+			[Product('cola', stock=1), Product('fanta', stock=3)],
+			[Product('fristi', stock=2), Product('applejuice', stock=4)]
 		]
 		vm.setInventory(inventory)
 		expected = 1
@@ -93,8 +92,8 @@ class TestVendingMachine(unittest.TestCase):
 	def test_hasPaidEnough(self):
 		vm = VendingMachine()
 		inventory = [
-			[{'name': 'cola', 'price': 1}, {'name': 'fanta', 'price': 3}],
-			[{'name': 'fristi', 'price': 2}, {'name': 'sprite', 'price': 4}]
+			[Product('cola', 1), Product('fanta', 3)],
+			[Product('fristi', 2), Product('applejuice', 4)]
 		]
 		vm.setInventory(inventory)
 		vm._VendingMachine__money = 1;
@@ -104,8 +103,8 @@ class TestVendingMachine(unittest.TestCase):
 	def test_inStock(self):
 		vm = VendingMachine()
 		inventory = [
-			[{'name': 'cola', 'stock': 1}, {'name': 'fanta', 'stock': 3}],
-			[{'name': 'fristi', 'stock': 0}, {'name': 'sprite', 'stock': 4}]
+			[Product('cola', stock=1), Product('fanta', stock=3)],
+			[Product('fristi', stock=0), Product('applejuice', stock=4)]
 		]
 		vm.setInventory(inventory)
 		self.assertFalse(vm.inStock(2, 1))
@@ -113,10 +112,11 @@ class TestVendingMachine(unittest.TestCase):
 
 	def test_deliverItem(self):
 		vm = VendingMachine()
+
 		inventory = [
-			[{'name': 'cola', 'stock': 1, 'price': 1}, {'name': 'fanta', 'stock': 3, 'price': 2}],
-			[{'name': 'fristi', 'stock': 0, 'price': 1}, {'name': 'sprite', 'stock': 4, 'price': 4}]
-		]
+			[Product('cola', 1, 1), Product('fanta', 2, stock=3)],
+			[Product('fristi', 1, stock=0), Product('sprite', 4, 4)]
+		]		
 		vm.setInventory(inventory)
 
 		self.assertRaises(OutOfStockException, vm.deliverItem, 2, 1)
@@ -140,27 +140,3 @@ class TestVendingMachine(unittest.TestCase):
  
 if __name__ == "__main__":
 	unittest.main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
